@@ -25,7 +25,7 @@ services:
     ports:
       - "8000:8000"
     environment:
-      - DATABASE_URL=mysql+pymysql://root:admin123@db:3306/vaxify
+      - DATABASE_URL=mysql+pymysql://root:admin123@vaxify-db:3306/vaxify
     volumes:
       - backend_data:/backend/data
       - ./backend:/app
@@ -50,7 +50,7 @@ services:
 
   # phpMyAdmin for managing MySQL database via web interface
   db-admin:
-    image: phpmyadmin/phpmyadmin
+    image: phpmyadmin
     container_name: vaxify-db-admin
     environment:
       PMA_HOST: db
