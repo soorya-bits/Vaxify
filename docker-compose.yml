@@ -1,0 +1,74 @@
+version: '3.8'
+
+services:
+  # Frontend React service
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: vaxify-frontend
+    ports:
+      - "80:3000"
+    networks:
+      - vaxify-net
+    depends_on:
+      - backend
+    volumes:
+      - ./frontend:/app
+
+  # Backend FastAPI service
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: vaxify-backend
+    ports:
+      - "8000:8000"
+    environment:
+      - DATABASE_URL=mysql+pymysql://root:admin123@db:3306/vaxify
+    volumes:
+      - backend_data:/backend/data
+      - ./backend:/app
+    networks:
+      - vaxify-net
+    depends_on:
+      - db
+
+  # MySQL database service
+  db:
+    image: mysql:8.0
+    container_name: vaxify-db
+    environment:
+      MYSQL_ROOT_PASSWORD: admin123
+      MYSQL_DATABASE: vaxify
+    volumes:
+      - mysql_data:/var/lib/mysql
+    networks:
+      - vaxify-net
+    ports:
+      - "3306:3306"
+
+  # phpMyAdmin for managing MySQL database via web interface
+  db-admin:
+    image: phpmyadmin/phpmyadmin
+    container_name: vaxify-db-admin
+    environment:
+      PMA_HOST: db
+      PMA_PORT: 3306
+      MYSQL_ROOT_PASSWORD: admin123
+    ports:
+      - "8080:80"
+    networks:
+      - vaxify-net
+    depends_on:
+      - db
+
+# Network for container communication
+networks:
+  vaxify-net:
+    driver: bridge
+
+# Volumes for persistent data
+volumes:
+  mysql_data:
+  backend_data:
