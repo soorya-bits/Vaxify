@@ -7,7 +7,7 @@ import os
 # Load environment variables from .env file
 load_dotenv()
 
-DATABASE_URL = os.getenv("DATABASE_URL", "mysql+pymysql://root:admin123@localhost:3306/vaxify")
+DATABASE_URL = os.getenv("DATABASE_URL", "")
 
 engine = create_engine(DATABASE_URL, echo=True)  # Setting echo to True for logging SQL queries
 
