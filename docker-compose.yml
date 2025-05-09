@@ -7,6 +7,7 @@ services:
       context: ./frontend
       dockerfile: Dockerfile
     container_name: vaxify-frontend
+    restart: always
     ports:
       - "80:3000"
     networks:
@@ -22,6 +23,7 @@ services:
       context: ./backend
       dockerfile: Dockerfile
     container_name: vaxify-backend
+    restart: always
     ports:
       - "8000:8000"
     environment:
@@ -38,6 +40,7 @@ services:
   db:
     image: mysql:8.0
     container_name: vaxify-db
+    restart: always
     environment:
       MYSQL_ROOT_PASSWORD: admin123
       MYSQL_DATABASE: vaxify
@@ -52,6 +55,7 @@ services:
   db-admin:
     image: phpmyadmin
     container_name: vaxify-db-admin
+    restart: always
     environment:
       PMA_HOST: db
       PMA_PORT: 3306
