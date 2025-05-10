@@ -2,7 +2,7 @@ from fastapi import FastAPI, Depends, HTTPException
 from sqlalchemy.orm import Session
 from sqlalchemy import exc, text
 from app.database import get_db, Base, engine, SessionLocal
-from app.routes import auth, students, drives, dashboard, user
+from app.routes import auth, students, vaccine, drive, dashboard, user
 from app.models.user import User, Role
 from app.utils.security import hash_password
 from dotenv import load_dotenv
@@ -45,5 +45,6 @@ def healthcheck(db: Session = Depends(get_db)):
 app.include_router(auth.router)
 app.include_router(user.router)
 app.include_router(students.router)
-app.include_router(drives.router)
+app.include_router(vaccine.router)
+app.include_router(drive.router)
 app.include_router(dashboard.router)

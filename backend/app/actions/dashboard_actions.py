@@ -1,7 +1,7 @@
 from sqlalchemy.orm import Session
 from app.models.student import Student
-from app.models.vaccination_record import VaccinationRecord
-from app.models.drive import VaccinationDrive
+# from app.models.vaccination_record import VaccinationRecord
+# from app.models.drive import VaccinationDrive
 from datetime import date, timedelta
 
 def get_dashboard_metrics(db: Session):
