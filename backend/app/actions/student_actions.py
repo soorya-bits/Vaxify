@@ -1,5 +1,6 @@
 from sqlalchemy.orm import Session
 from fastapi import HTTPException
+from app.utils import parse_applicable_classes
 from app.models.student import Student
 from app.models.vaccination_record import VaccinationRecord
 from app.models.drive import VaccinationDrive
@@ -123,11 +124,11 @@ def bulk_import_students(db: Session, file) -> dict:
     return {"message": f"{len(students_to_create)} students have been successfully imported."}
 
 
-# Mark a student as vaccinated
-def mark_student_vaccinated(db: Session, student_id: int, drive_id: int, vaccine_id: int) -> dict:
+def mark_student_vaccinated(db: Session, student_id: int, drive_id: int) -> dict:
     # Fetch the student, vaccination drive, and vaccine details
     student = db.query(Student).filter(Student.id == student_id).first()
     vaccination_drive = db.query(VaccinationDrive).filter(VaccinationDrive.id == drive_id).first()
+    vaccine_id = vaccination_drive.vaccine_id if vaccination_drive else None
     vaccine = db.query(Vaccine).filter(Vaccine.id == vaccine_id).first()
 
     if not student:
@@ -137,12 +138,21 @@ def mark_student_vaccinated(db: Session, student_id: int, drive_id: int, vaccine
     if not vaccine:
         raise HTTPException(status_code=404, detail="Vaccine not found")
 
+    # Validate if the student belongs to a class applicable for the vaccination drive
+    applicable_classes = parse_applicable_classes(vaccination_drive.applicable_classes)
+    if student.student_class not in applicable_classes:
+        raise HTTPException(status_code=400, detail="Student's class is not applicable for this vaccination drive")
+
+    # Check if the drive has available doses
+    if vaccination_drive.available_doses <= 0:
+        raise HTTPException(status_code=400, detail="No available doses for this vaccination drive")
+
     # Check if the student has already been vaccinated with this vaccine
     existing_record = db.query(VaccinationRecord).filter(
         VaccinationRecord.student_id == student_id,
         VaccinationRecord.vaccine_id == vaccine_id
     ).first()
-    
+
     if existing_record:
         raise HTTPException(status_code=400, detail="Student has already been vaccinated with this vaccine")
 
@@ -150,13 +160,22 @@ def mark_student_vaccinated(db: Session, student_id: int, drive_id: int, vaccine
     vaccination_record = VaccinationRecord(
         student_id=student_id,
         vaccine_id=vaccine_id,
-        vaccination_drive_id=drive_id,
-        vaccinated_at=datetime.utcnow()  # mark the date of vaccination
+        drive_id=drive_id,
+        vaccination_date=datetime.utcnow()  # mark the date of vaccination
     )
 
     # Add the vaccination record to the session
     db.add(vaccination_record)
-    db.commit()
-    db.refresh(vaccination_record)
 
-    return {"message": "Student successfully vaccinated", "vaccination_record": vaccination_record}
+    # Decrease the available doses of the drive by 1
+    vaccination_drive.available_doses -= 1
+
+    try:
+        db.commit()
+        db.refresh(vaccination_record)
+        db.refresh(vaccination_drive)
+    except Exception as e:
+        db.rollback()
+        raise HTTPException(status_code=500, detail="Failed to mark student as vaccinated")
+
+    return {"message": "Student successfully vaccinated", "vaccination_record": vaccination_record, "updated_drive": vaccination_drive}
