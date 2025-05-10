@@ -28,6 +28,7 @@ services:
       - "8000:8000"
     environment:
       - DATABASE_URL=mysql+pymysql://root:admin123@vaxify-db:3306/vaxify
+      - DEFAULT_ADMIN_PASSWORD=admin123
     volumes:
       - backend_data:/backend/data
       - ./backend:/app
