@@ -11,3 +11,11 @@ code {
   font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
     monospace;
 }
+
+.css-1lwhjos-MuiPaper-root-MuiDrawer-paper {
+  position: relative !important;
+}
+
+.css-cokf1l-MuiListItemIcon-root {
+  min-width: 35px !important;
+}

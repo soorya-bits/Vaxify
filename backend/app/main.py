@@ -6,8 +6,23 @@ from app.routes import auth, students, vaccine, drive, dashboard, user
 from app.models.user import User, Role
 from app.utils.security import hash_password
 from dotenv import load_dotenv
+from fastapi.middleware.cors import CORSMiddleware
+import os
 
 app = FastAPI()
+
+# Add CORS middleware
+origins = [
+    "http://localhost:3000",
+]
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=origins,  # Allow specific origins
+    allow_credentials=True,
+    allow_methods=["*"],  # Allow all methods
+    allow_headers=["*"],  # Allow all headers
+)
 
 Base.metadata.create_all(bind=engine)
 
