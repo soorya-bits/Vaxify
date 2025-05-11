@@ -227,7 +227,7 @@ export default function VaccinationDrives() {
                                 <TableCell><b>Student</b></TableCell>
                                 <TableCell><b>Grade/Class</b></TableCell>
                                 <TableCell><b>Vaccine</b></TableCell>
-                                <TableCell><b>Date</b></TableCell>
+                                <TableCell><b>Vaccine</b></TableCell>
                               </TableRow>
                             </TableHead>
                             <TableBody>

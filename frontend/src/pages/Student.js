@@ -302,7 +302,7 @@ export default function Students() {
             margin="dense"
             value={form.unique_id}
             onChange={(e) => setForm({ ...form, unique_id: e.target.value })}
-            InputProps={{ readOnly: true }}
+            InputProps={{ readOnly: editStudentId ? true : false}}
           />
           <TextField
             fullWidth
