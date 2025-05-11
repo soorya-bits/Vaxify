@@ -56,16 +56,31 @@ Vaxify/
     ```bash
     cd backend
     ```
-2. Create a virtual environment and install dependencies:
+2. Create a `.env` file in the root directory and add the following variables:
+    ```
+    DATABASE_URL=mysql+pymysql://<mysqlusername>:<mysqlpassword>@<mysqlhost>:<mysqlport>/vaxify
+    DEFAULT_ADMIN_PASSWORD=admin123
+    ```
+
+    - `DATABASE_URL`: Connection string for the MySQL database.
+    - `DEFAULT_ADMIN_PASSWORD`: Default password for the automated admin user created on boot.
+
+3. Set up a Python virtual environment:
     ```bash
     python -m venv venv
     source venv/bin/activate  # On Windows: venv\Scripts\activate
+    ```
+
+4. Install dependencies:
+    ```bash
     pip install -r requirements.txt
     ```
-3. Run the backend server:
+
+5. Run the FastAPI server:
     ```bash
     uvicorn main:app --reload
     ```
+    The server will start on `http://127.0.0.1:8000`.
 
 #### Frontend Setup
 1. Navigate to the frontend directory:
