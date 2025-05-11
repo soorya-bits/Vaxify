@@ -4,8 +4,9 @@ import {
     IconButton, Table, TableBody, TableCell, TableContainer,
     TableHead, TableRow, TextField, Paper, TableSortLabel, TablePagination,
     Select, MenuItem, InputLabel, FormControl
-  } from '@mui/material';
+} from '@mui/material';
 import { Edit } from '@mui/icons-material';
+import VaccinesIcon from '@mui/icons-material/Vaccines';
 import { useEffect, useState } from 'react';
 import { toast } from 'react-toastify';
 import api from '../services/api';
@@ -19,7 +20,7 @@ const initialForm = {
   applicable_classes: '',
   available_doses: '',
 };
-  
+
 export default function VaccinationDrives() {
   const [drives, setDrives] = useState([]);
   const [vaccines, setVaccines] = useState([]);
@@ -33,10 +34,14 @@ export default function VaccinationDrives() {
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(5);
   const [expandedRows, setExpandedRows] = useState({});
+  const [vaccinateDialogOpen, setVaccinateDialogOpen] = useState(false);
+  const [selectedDrive, setSelectedDrive] = useState(null);
+  const [students, setStudents] = useState([]);
+  const [selectedStudent, setSelectedStudent] = useState(null);
 
   const toggleRow = (id) => {
     setExpandedRows(prev => ({ ...prev, [id]: !prev[id] }));
-  };    
+  };
 
   const fetchDrives = async () => {
     try {
@@ -56,6 +61,15 @@ export default function VaccinationDrives() {
     }
   };
 
+  const fetchStudents = async () => {
+    try {
+      const res = await api.get('/students');
+      setStudents(res.data);
+    } catch {
+      toast.error('Failed to fetch students');
+    }
+  };
+
   useEffect(() => {
     fetchDrives();
     fetchVaccines();
@@ -72,7 +86,6 @@ export default function VaccinationDrives() {
         await api.put(`/vaccination-drives/${editDriveId}`, form);
         toast.success('Drive updated');
       } else {
-        console.log(form);
         await api.post('/vaccination-drives', form);
         toast.success('Drive created');
       }
@@ -132,6 +145,28 @@ export default function VaccinationDrives() {
     return order === 'asc' ? valA.localeCompare(valB) : valB.localeCompare(valA);
   });
 
+  const handleVaccinate = (drive) => {
+    setSelectedDrive(drive);
+    setVaccinateDialogOpen(true);
+    fetchStudents();
+  };
+
+  const handleVaccinateConfirm = async () => {
+    try {
+      await api.post(`/students/${selectedStudent}/vaccinate/${selectedDrive.id}`);
+      toast.success('Student vaccinated');
+      setVaccinateDialogOpen(false);
+      fetchDrives();
+    } catch {
+      toast.error('Failed to vaccinate student');
+    }
+  };
+
+  const handleVaccinateClose = () => {
+    setVaccinateDialogOpen(false);
+    setSelectedStudent(null);
+  };
+
   return (
     <Box>
       <Box display="flex" justifyContent="space-between" mb={2}>
@@ -176,6 +211,7 @@ export default function VaccinationDrives() {
                   </TableCell>
                   <TableCell>
                     <IconButton onClick={() => handleEdit(drive)}><Edit /></IconButton>
+                    <IconButton onClick={() => handleVaccinate(drive)}><VaccinesIcon /></IconButton>
                   </TableCell>
                 </TableRow>
 
@@ -189,6 +225,7 @@ export default function VaccinationDrives() {
                             <TableHead>
                               <TableRow>
                                 <TableCell>Student</TableCell>
+                                <TableCell>Grade/Class</TableCell>
                                 <TableCell>Vaccine</TableCell>
                                 <TableCell>Date</TableCell>
                               </TableRow>
@@ -197,6 +234,7 @@ export default function VaccinationDrives() {
                               {drive.vaccination_records.map((rec) => (
                                 <TableRow key={rec.id}>
                                   <TableCell>{rec?.student?.name}</TableCell>
+                                  <TableCell>{rec?.student?.student_class}</TableCell>
                                   <TableCell>{rec?.vaccine?.name}</TableCell>
                                   <TableCell>{rec.vaccination_date}</TableCell>
                                 </TableRow>
@@ -254,7 +292,7 @@ export default function VaccinationDrives() {
             onChange={(e) => setForm({ ...form, applicable_classes: e.target.value })}
           />
           <TextField
-            fullWidth label="Available Doses" type="number" margin="dense"
+            fullWidth label="Available Doses" margin="dense" type="number"
             value={form.available_doses}
             onChange={(e) => setForm({ ...form, available_doses: e.target.value })}
           />
@@ -266,12 +304,39 @@ export default function VaccinationDrives() {
       </Dialog>
 
       <ConfirmDialog
-        open={Boolean(deleteDriveId)}
-        title="Confirm Deletion"
-        content="Are you sure you want to delete this vaccination drive?"
-        onClose={() => setDeleteDriveId(null)}
+        open={deleteDriveId !== null}
         onConfirm={handleDelete}
+        onCancel={() => setDeleteDriveId(null)}
+        title="Delete Vaccination Drive"
+        message="Are you sure you want to delete this vaccination drive?"
       />
+
+      <Dialog open={vaccinateDialogOpen} onClose={handleVaccinateClose} maxWidth="md" fullWidth>
+        <DialogTitle>Mark Student as Vaccinated</DialogTitle>
+        <DialogContent>
+          <FormControl fullWidth margin="dense">
+            <InputLabel>Vaccine</InputLabel>
+            <Select value={selectedDrive?.vaccine_id} disabled>
+              {vaccines.map(v => (
+                <MenuItem key={v.id} value={v.id}>{v.name}</MenuItem>
+              ))}
+            </Select>
+          </FormControl>
+
+          <FormControl fullWidth margin="dense">
+            <InputLabel>Student</InputLabel>
+            <Select value={selectedStudent} onChange={(e) => setSelectedStudent(e.target.value)}>
+              {students.map(student => (
+                <MenuItem key={student.id} value={student.id}>{student.name} (Grade {student.student_class})</MenuItem>
+              ))}
+            </Select>
+          </FormControl>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={handleVaccinateClose}>Cancel</Button>
+          <Button variant="contained" onClick={handleVaccinateConfirm}>Vaccinate</Button>
+        </DialogActions>
+      </Dialog>
     </Box>
   );
 }
