@@ -4,10 +4,11 @@ A web-based vaccine tracking system designed for school vaccination management. 
 
 ```
 Vaxify/
-├── backend/            # Python FastAPI backend code
-├── frontend/           # React frontend code
-├── docker-compose.yml  # Docker compose file
-└── README.md           # Project overview and setup instructions
+├── backend/                # Python FastAPI backend code
+├── frontend/               # React frontend code
+├── api-documentation.md    # API Documentation
+├── docker-compose.yml      # Docker compose file
+└── README.md               # Project overview and setup instructions
 ```
 
 ## Technologies Involved
