@@ -46,7 +46,7 @@ Vaxify/
     ```
 
 4. **Access the Application**
-    - Frontend: `http://localhost:3000`
+    - Frontend: `http://localhost`
     - Backend API: `http://localhost:8000`
 
 ### Optional: Manual Setup
