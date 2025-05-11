@@ -54,7 +54,7 @@ def create_default_admin():
         db.close()
 
 # Healthcheck endpoint
-@app.get("/health")
+@app.get("/health", tags=["Healthcheck"])
 def healthcheck(db: Session = Depends(get_db)):
     try:
         db.execute(text("SELECT 1"))
