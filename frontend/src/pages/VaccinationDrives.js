@@ -224,10 +224,10 @@ export default function VaccinationDrives() {
                           <Table size="small">
                             <TableHead>
                               <TableRow>
-                                <TableCell>Student</TableCell>
-                                <TableCell>Grade/Class</TableCell>
-                                <TableCell>Vaccine</TableCell>
-                                <TableCell>Date</TableCell>
+                                <TableCell><b>Student</b></TableCell>
+                                <TableCell><b>Grade/Class</b></TableCell>
+                                <TableCell><b>Vaccine</b></TableCell>
+                                <TableCell><b>Date</b></TableCell>
                               </TableRow>
                             </TableHead>
                             <TableBody>

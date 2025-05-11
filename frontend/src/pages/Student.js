@@ -1,7 +1,7 @@
 import {
   Box, Button, Dialog, DialogActions, DialogContent, DialogTitle,
   IconButton, Table, TableBody, TableCell, TableContainer,
-  TableHead, TableRow, TextField, Paper, TableSortLabel, TablePagination
+  TableHead, TableRow, TextField, Paper, TableSortLabel, TablePagination, Select, MenuItem, InputLabel, FormControl
 } from '@mui/material';
 import { Edit, Delete, FileDownload, Upload } from '@mui/icons-material';
 import { useEffect, useState } from 'react';
@@ -29,6 +29,7 @@ export default function Students() {
   const [editStudentId, setEditStudentId] = useState(null);
   const [deleteStudentId, setDeleteStudentId] = useState(null);
   const [searchQuery, setSearchQuery] = useState('');
+  const [vaccinationStatusFilter, setVaccinationStatusFilter] = useState('');
   const [orderBy, setOrderBy] = useState('name');
   const [order, setOrder] = useState('asc');
   const [page, setPage] = useState(0);
@@ -107,6 +108,19 @@ export default function Students() {
     setPage(0);
   };
 
+  const handleVaccinationStatusFilter = (e) => {
+    const filterValue = e.target.value;
+    setVaccinationStatusFilter(filterValue);
+
+    const filtered = students.filter((student) =>
+      filterValue === '' ||
+      (filterValue === 'vaccinated' && student.is_vaccinated) ||
+      (filterValue === 'not_vaccinated' && !student.is_vaccinated)
+    );
+    setFilteredStudents(filtered);
+    setPage(0);
+  };
+
   const handleExport = () => {
     const csv = Papa.unparse(filteredStudents);
     const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
@@ -178,15 +192,28 @@ export default function Students() {
   return (
     <Box>
       <Box display="flex" justifyContent="space-between" mb={2}>
-        <TextField label="Search" value={searchQuery} onChange={handleSearch} size="small" />
-        <Box>
+        <Box display="flex" alignItems="center" gap={2}>
+          <TextField label="Search" value={searchQuery} onChange={handleSearch} size="small" />
+          <FormControl size="small" sx={{ minWidth: 120 }}>
+            <InputLabel>Vaccination Status</InputLabel>
+            <Select
+              value={vaccinationStatusFilter}
+              onChange={handleVaccinationStatusFilter}
+              label="Vaccination Status"
+            >
+              <MenuItem value="">All</MenuItem>
+              <MenuItem value="vaccinated">Vaccinated</MenuItem>
+              <MenuItem value="not_vaccinated">Not Vaccinated</MenuItem>
+            </Select>
+          </FormControl>
+        </Box>
+        <Box display="flex" alignItems="center">
           <Button startIcon={<FileDownload />} onClick={handleExport} sx={{ mr: 1 }}>
             Export
           </Button>
           <Button startIcon={<Upload />} variant="contained" onClick={() => setOpenImportDialog(true)}>
             Bulk Import
           </Button>
-          &nbsp;&nbsp;
           <Button
             variant="contained"
             onClick={() => {
@@ -194,17 +221,17 @@ export default function Students() {
               setEditStudentId(null);
               setOpen(true);
             }}
+            sx={{ ml: 2 }}
           >
             Create Student
           </Button>
         </Box>
       </Box>
-
       <TableContainer component={Paper}>
         <Table>
           <TableHead sx={{ backgroundColor: 'primary.main' }}>
             <TableRow>
-              {['Name', 'Class', 'Unique ID', 'Email'].map((col) => (
+              {['Name', 'Class', 'Unique ID', 'Email', 'Vaccination Status'].map((col) => (
                 <TableCell key={col} sx={{ color: 'white' }}>
                   <TableSortLabel
                     active={orderBy === col}
@@ -226,6 +253,7 @@ export default function Students() {
                 <TableCell>{student.student_class}</TableCell>
                 <TableCell>{student.unique_id}</TableCell>
                 <TableCell>{student.email}</TableCell>
+                <TableCell>{student.is_vaccinated ? 'Yes' : 'No'}</TableCell>
                 <TableCell>
                   <IconButton onClick={() => handleEdit(student)}>
                     <Edit />
@@ -273,26 +301,16 @@ export default function Students() {
             label="Unique ID"
             margin="dense"
             value={form.unique_id}
-            disabled={editStudentId}
             onChange={(e) => setForm({ ...form, unique_id: e.target.value })}
-          />
-          <TextField
-            fullWidth
-            label="Email"
-            margin="dense"
-            value={form.email}
-            onChange={(e) => setForm({ ...form, email: e.target.value })}
+            InputProps={{ readOnly: true }}
           />
           <TextField
             fullWidth
             label="Date of Birth"
             margin="dense"
+            type="date"
             value={form.date_of_birth}
             onChange={(e) => setForm({ ...form, date_of_birth: e.target.value })}
-            type="date"
-            InputLabelProps={{
-              shrink: true,
-            }}
           />
           <TextField
             fullWidth
@@ -307,53 +325,51 @@ export default function Students() {
             margin="dense"
             value={form.address}
             onChange={(e) => setForm({ ...form, address: e.target.value })}
-          />
-          <TextField
+            />
+            <TextField
             fullWidth
             label="Phone Number"
             margin="dense"
             value={form.phone_number}
             onChange={(e) => setForm({ ...form, phone_number: e.target.value })}
           />
-        </DialogContent>
+          <TextField
+            fullWidth
+            label="Email"
+            margin="dense"
+            value={form.email}
+            onChange={(e) => setForm({ ...form, email: e.target.value })}
+          />
+          </DialogContent>
         <DialogActions>
-          <Button onClick={handleClose}>Cancel</Button>
-          <Button variant="contained" onClick={handleSave}>
-            Save
-          </Button>
-        </DialogActions>
-      </Dialog>
+        <Button onClick={handleClose}>Cancel</Button>
+        <Button variant="contained" onClick={handleSave}>{editStudentId ? 'Save' : 'Create'}</Button>
+      </DialogActions>
+     </Dialog>
+     <ConfirmDialog
+    open={deleteStudentId !== null}
+    onConfirm={handleDelete}
+    onCancel={() => setDeleteStudentId(null)}
+    title="Delete Student"
+    message="Are you sure you want to delete this student?"
+  />
 
-      <ConfirmDialog
-        open={Boolean(deleteStudentId)}
-        title="Confirm Deletion"
-        content="Are you sure you want to delete this student?"
-        onClose={() => setDeleteStudentId(null)}
-        onConfirm={handleDelete}
+  <Dialog open={openImportDialog} onClose={() => setOpenImportDialog(false)}>
+    <DialogTitle>Bulk Import Students</DialogTitle>
+    <DialogContent>
+      <input
+        type="file"
+        accept=".csv"
+        onChange={handleCsvFileChange}
       />
-
-      {/* Bulk Import Dialog */}
-      <Dialog open={openImportDialog} onClose={() => setOpenImportDialog(false)}>
-        <DialogTitle>Bulk Import Students</DialogTitle>
-        <DialogContent>
-          <Button variant="outlined" onClick={handleDownloadTemplate}>
-            Download CSV Template
-          </Button>
-          <Box mt={2}>
-            <Button variant="contained" component="label">
-              Select CSV File
-              <input type="file" hidden onChange={handleCsvFileChange} />
-            </Button>
-          </Box>
-          <Box mt={2}>
-            {csvFile && <span>Selected File: {csvFile.name}</span>}
-          </Box>
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={() => setOpenImportDialog(false)}>Cancel</Button>
-          <Button variant="contained" onClick={handleFileUpload}>Import</Button>
-        </DialogActions>
-      </Dialog>
-    </Box>
-  );
+    </DialogContent>
+    <DialogActions>
+      <Button onClick={handleDownloadTemplate} color="primary">Download Template</Button>
+      <Button onClick={handleFileUpload} color="primary">Upload</Button>
+      <Button onClick={() => setOpenImportDialog(false)} color="secondary">Cancel</Button>
+    </DialogActions>
+  </Dialog>
+</Box>
+);
 }
+ 

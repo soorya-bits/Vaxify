@@ -1,5 +1,5 @@
 from pydantic import BaseModel
-from typing import Optional
+from typing import Optional, List
 from datetime import date
 
 # Schema for creating a student
@@ -24,6 +24,7 @@ class StudentOut(BaseModel):
     address: Optional[str]
     phone_number: Optional[str]
     email: Optional[str]
+    is_vaccinated: bool
 
     class Config:
         orm_mode = True

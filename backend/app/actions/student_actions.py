@@ -12,7 +12,7 @@ import csv
 from io import StringIO
 
 # Create a new student
-def create_student(db: Session, data: dict) -> Student:
+def create_student(db: Session, data: StudentCreate) -> dict:
     student = Student(
         name=data.name,
         student_class=data.student_class,
@@ -26,7 +26,15 @@ def create_student(db: Session, data: dict) -> Student:
     db.add(student)
     db.commit()
     db.refresh(student)
-    return student
+
+    is_vaccinated = db.query(
+        db.query(VaccinationRecord).filter(VaccinationRecord.student_id == student.id).exists()
+    ).scalar()
+
+    student_dict = student.__dict__.copy()
+    student_dict["is_vaccinated"] = is_vaccinated
+    student_dict.pop("_sa_instance_state", None)
+    return student_dict
 
 # List all students with optional filters
 def list_students(
@@ -34,45 +42,58 @@ def list_students(
 ) -> list:
     query = db.query(Student)
     
+def list_students(
+    db: Session,
+    name: Optional[str],
+    student_class: Optional[str],
+    vaccinated: Optional[bool]
+) -> list[dict]:
+    query = db.query(Student)
+
     if name:
-        query = query.filter(Student.name.like(f"%{name}%"))
+        query = query.filter(Student.name.ilike(f"%{name}%"))
     if student_class:
         query = query.filter(Student.student_class == student_class)
-    if vaccinated is not None:
-        query = query.join(VaccinationRecord).filter(VaccinationRecord.vaccinated == vaccinated)
 
-    return query.all()
+    if vaccinated is True:
+        query = query.join(VaccinationRecord).distinct()
+    elif vaccinated is False:
+        query = query.outerjoin(VaccinationRecord).filter(VaccinationRecord.id == None)
+
+    students = query.all()
+
+    result = []
+    for student in students:
+        has_record = db.query(
+            db.query(VaccinationRecord).filter(VaccinationRecord.student_id == student.id).exists()
+        ).scalar()
+        student_dict = student.__dict__.copy()
+        student_dict["is_vaccinated"] = has_record
+        student_dict.pop("_sa_instance_state", None)  # Remove internal SQLAlchemy field
+        result.append(student_dict)
+    return result
 
 # Update student details
-def update_student(
-    db: Session, student_id: int, data: dict
-) -> Student:
+def update_student(db: Session, student_id: int, data: StudentCreate) -> dict:
     db_student = db.query(Student).filter(Student.id == student_id).first()
     if not db_student:
         raise HTTPException(status_code=404, detail="Student not found")
     
-    if data.name:
-        db_student.name = data.name
-    if data.student_class:
-        db_student.student_class = data.student_class
-    if data.unique_id:
-        db_student.unique_id = data.unique_id
-    if data.date_of_birth:
-        db_student.date_of_birth = data.date_of_birth
-    if data.gender:
-        db_student.gender = data.gender
-    if data.address:
-        db_student.address = data.address
-    if data.phone_number:
-        db_student.phone_number = data.phone_number
-    if data.email:
-        db_student.email = data.email
+    for field in data.dict(exclude_unset=True):
+        setattr(db_student, field, data.dict()[field])
 
     db_student.updated_at = datetime.utcnow()
-
     db.commit()
     db.refresh(db_student)
-    return db_student
+
+    is_vaccinated = db.query(
+        db.query(VaccinationRecord).filter(VaccinationRecord.student_id == db_student.id).exists()
+    ).scalar()
+
+    student_dict = db_student.__dict__.copy()
+    student_dict["is_vaccinated"] = is_vaccinated
+    student_dict.pop("_sa_instance_state", None)
+    return student_dict
 
 # Delete student by ID
 def delete_student(db: Session, student_id: int) -> dict:

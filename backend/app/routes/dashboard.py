@@ -1,6 +1,6 @@
 from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
-from app.database import SessionLocal, get_db
+from app.database import get_db
 from app.actions.dashboard_actions import get_dashboard_metrics
 from app.dependencies import get_current_user
 

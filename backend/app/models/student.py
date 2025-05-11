@@ -1,6 +1,7 @@
 from sqlalchemy import Column, Integer, String, Date, DateTime, func
 from sqlalchemy.orm import relationship
 from app.database import Base
+from typing import ClassVar
 
 class Student(Base):
     __tablename__ = "students"
@@ -14,6 +15,7 @@ class Student(Base):
     address = Column(String(200), nullable=True)
     phone_number = Column(String(15), nullable=True)
     email = Column(String(100), nullable=True, unique=True)
+    is_vaccinated: ClassVar[bool]
     
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     updated_at = Column(DateTime(timezone=True), onupdate=func.now(), server_default=func.now())

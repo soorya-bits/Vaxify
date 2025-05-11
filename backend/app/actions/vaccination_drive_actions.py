@@ -28,11 +28,19 @@ def create_vaccination_drive(db: Session, vaccine_id: int, date: str, applicable
 
 # List all vaccination drives
 def list_vaccination_drives(db: Session) -> list:
-    return db.query(VaccinationDrive).options(
+    drives = db.query(VaccinationDrive).options(
         joinedload(VaccinationDrive.vaccine),
         joinedload(VaccinationDrive.vaccination_records).joinedload(VaccinationRecord.student),
         joinedload(VaccinationDrive.vaccination_records).joinedload(VaccinationRecord.vaccine)
     ).all()
+
+    for drive in drives:
+        for record in drive.vaccination_records:
+            student = record.student
+            # Manually add is_vaccinated field
+            student.is_vaccinated = True  # Since it's in a vaccination record, we know this is True
+
+    return drives
 
 # Get a single vaccination drive by ID
 def get_vaccination_drive(db: Session, drive_id: int) -> VaccinationDrive:
