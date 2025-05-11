@@ -13,7 +13,7 @@ class VaccinationDrive(Base):
     
     vaccine = relationship("Vaccine", back_populates="vaccination_drives")
 
-    vaccination_records = relationship("VaccinationRecord", back_populates="drive")
+    vaccination_records = relationship("VaccinationRecord", back_populates="drive", lazy="joined")
 
     def check_editable(self):
         if self.date < date.today():

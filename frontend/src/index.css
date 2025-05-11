@@ -16,6 +16,10 @@ code {
   position: relative !important;
 }
 
-.css-cokf1l-MuiListItemIcon-root {
+.css-ro2zky-MuiListItemIcon-root {
+  min-width: 35px !important;
+}
+
+.css-rlvhif-MuiListItemIcon-root {
   min-width: 35px !important;
 }

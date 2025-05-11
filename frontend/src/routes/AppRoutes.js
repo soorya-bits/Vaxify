@@ -7,6 +7,7 @@ import Users from '../pages/Users';
 import DashboardLayout from '../layout/DashboardLayout';
 import Vaccines from '../pages/Vaccines';
 import Students from '../pages/Student';
+import VaccinationDrives from '../pages/VaccinationDrives';
 
 export default function AppRoutes() {
   return (
@@ -50,6 +51,14 @@ export default function AppRoutes() {
         element={
           <PrivateRoute>
             <DashboardLayout><Students /></DashboardLayout>
+          </PrivateRoute>
+        }
+      />
+      <Route
+        path="/vaccination-drives"
+        element={
+          <PrivateRoute>
+            <DashboardLayout><VaccinationDrives /></DashboardLayout>
           </PrivateRoute>
         }
       />

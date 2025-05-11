@@ -283,7 +283,38 @@ export default function Students() {
             value={form.email}
             onChange={(e) => setForm({ ...form, email: e.target.value })}
           />
-          {/* Add other fields here */}
+          <TextField
+            fullWidth
+            label="Date of Birth"
+            margin="dense"
+            value={form.date_of_birth}
+            onChange={(e) => setForm({ ...form, date_of_birth: e.target.value })}
+            type="date"
+            InputLabelProps={{
+              shrink: true,
+            }}
+          />
+          <TextField
+            fullWidth
+            label="Gender"
+            margin="dense"
+            value={form.gender}
+            onChange={(e) => setForm({ ...form, gender: e.target.value })}
+          />
+          <TextField
+            fullWidth
+            label="Address"
+            margin="dense"
+            value={form.address}
+            onChange={(e) => setForm({ ...form, address: e.target.value })}
+          />
+          <TextField
+            fullWidth
+            label="Phone Number"
+            margin="dense"
+            value={form.phone_number}
+            onChange={(e) => setForm({ ...form, phone_number: e.target.value })}
+          />
         </DialogContent>
         <DialogActions>
           <Button onClick={handleClose}>Cancel</Button>

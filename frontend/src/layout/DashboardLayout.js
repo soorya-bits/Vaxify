@@ -22,8 +22,12 @@ export default function DashboardLayout({ children }) {
 
   const getPageTitle = (path) => {
     const title = path.split('/')[1]; // Split the path and take the second segment
-    return title.charAt(0).toUpperCase() + title.slice(1); // Capitalize the first letter
-  };
+    const formattedTitle = title
+      .split('-') // Split by dashes
+      .map(word => word.charAt(0).toUpperCase() + word.slice(1)) // Capitalize each word
+      .join(' '); // Join the words back with spaces
+    return formattedTitle;
+  };  
 
   useEffect(() => {
     const userData = get_user();

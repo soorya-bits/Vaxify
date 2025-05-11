@@ -9,7 +9,11 @@ from dotenv import load_dotenv
 from fastapi.middleware.cors import CORSMiddleware
 import os
 
-app = FastAPI()
+app = FastAPI(
+    title="Vaxify API",
+    description="API for Vaxify application of St. Mary’s High School",
+    version="1.0.0"
+)
 
 # Add CORS middleware
 origins = [
