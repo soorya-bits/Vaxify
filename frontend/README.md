@@ -66,8 +66,3 @@ To create a production build of the application:
 For more information about the technologies used in this project, refer to the following resources:
 - [React Documentation](https://reactjs.org/)
 - [Create React App Documentation](https://create-react-app.dev/docs/getting-started/)
-
-## Contributing
-
-If you'd like to contribute to the project, feel free to submit a pull request or open an issue on the repository.
- Getting Started with Create React App
