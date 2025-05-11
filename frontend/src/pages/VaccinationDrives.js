@@ -3,7 +3,7 @@ import {
     Box, Button, Dialog, DialogActions, DialogContent, DialogTitle,
     IconButton, Table, TableBody, TableCell, TableContainer,
     TableHead, TableRow, TextField, Paper, TableSortLabel, TablePagination,
-    Select, MenuItem, InputLabel, FormControl
+    Select, Menu, MenuItem, InputLabel, FormControl
 } from '@mui/material';
 import { Edit } from '@mui/icons-material';
 import VaccinesIcon from '@mui/icons-material/Vaccines';
@@ -13,6 +13,8 @@ import api from '../services/api';
 import ConfirmDialog from '../utils/ConfirmDialog';
 import { Collapse } from '@mui/material';
 import { KeyboardArrowDown, KeyboardArrowUp } from '@mui/icons-material';
+import MoreVertIcon from '@mui/icons-material/MoreVert';
+import config from '../config';
 
 const initialForm = {
   vaccine_id: '',
@@ -38,7 +40,9 @@ export default function VaccinationDrives() {
   const [selectedDrive, setSelectedDrive] = useState(null);
   const [students, setStudents] = useState([]);
   const [selectedStudent, setSelectedStudent] = useState(null);
-
+  const [menuAnchor, setMenuAnchor] = useState(null);
+  const [menuDriveId, setMenuDriveId] = useState(null);
+  
   const toggleRow = (id) => {
     setExpandedRows(prev => ({ ...prev, [id]: !prev[id] }));
   };
@@ -167,6 +171,22 @@ export default function VaccinationDrives() {
     setSelectedStudent(null);
   };
 
+  const handleMenuOpen = (event, driveId) => {
+    setMenuAnchor(event.currentTarget);
+    setMenuDriveId(driveId);
+  };
+  
+  const handleMenuClose = () => {
+    setMenuAnchor(null);
+    setMenuDriveId(null);
+  };  
+
+  const exportDrive = (driveId, format) => {
+    const url = `${config.apiUrl}/vaccination-drives/${driveId}/export/${format}`;
+    window.open(url, '_blank');
+    handleMenuClose();
+  };
+
   return (
     <Box>
       <Box display="flex" justifyContent="space-between" mb={2}>
@@ -212,6 +232,19 @@ export default function VaccinationDrives() {
                   <TableCell>
                     <IconButton onClick={() => handleEdit(drive)}><Edit /></IconButton>
                     <IconButton onClick={() => handleVaccinate(drive)}><VaccinesIcon /></IconButton>
+
+                    <IconButton onClick={(e) => handleMenuOpen(e, drive.id)}>
+                      <MoreVertIcon />
+                    </IconButton>
+                    <Menu
+                      anchorEl={menuAnchor}
+                      open={Boolean(menuAnchor && menuDriveId === drive.id)}
+                      onClose={handleMenuClose}
+                    >
+                      <MenuItem onClick={() => exportDrive(drive.id, 'csv')}>Export as CSV</MenuItem>
+                      <MenuItem onClick={() => exportDrive(drive.id, 'pdf')}>Export as PDF</MenuItem>
+                      <MenuItem onClick={() => exportDrive(drive.id, 'excel')}>Export as Excel</MenuItem>
+                    </Menu>
                   </TableCell>
                 </TableRow>
 
